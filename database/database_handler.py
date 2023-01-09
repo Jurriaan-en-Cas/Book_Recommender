@@ -44,6 +44,24 @@ def create_book(book_name, genre_id):
     execute_query_without_result(query)
 
 
+def register_hit(id, user_name):
+    user = get_user(user_name)
+    query = "INSERT INTO Hit (Id, User_id) VALUES ('{}', {})".format(id, user[0])
+    execute_query_without_result(query)
+
+
+def get_hit(user_name):
+    user = get_user(user_name)
+    query = "SELECT * FROM Hit WHERE User_id = {}".format(user[0])
+    return execute_query_with_result(query)[0]
+
+
+def delete_hit(user_name):
+    user = get_user(user_name)
+    query = "DELETE FROM Hit WHERE User_id = {}".format(user[0])
+    execute_query_without_result(query)
+
+
 def execute_query_with_result(query):
     connection = create_connection()
     cursor = connection.cursor()
@@ -69,7 +87,7 @@ def create_db():
     cur = connection.cursor()
     tables_to_create = []
 
-    tables_to_create.append("CREATE TABLE IF NOT EXISTS User ("
+    tables_to_create.append("CREATE TABLE IF NOT EXISTS 'User' ("
                             "Id INTEGER PRIMARY KEY AUTOINCREMENT,"
                             "Name VARCHAR(64) NOT NULL)")
 
@@ -94,6 +112,10 @@ def create_db():
     tables_to_create.append("CREATE TABLE IF NOT EXISTS Recommendation ("
                             "User_id INTEGER NOT NULL,"
                             "Book_id INTEGER NOT NULL)")
+
+    tables_to_create.append("CREATE TABLE IF NOT EXISTS Hit ("
+                            "Id INTEGER NOT NULL,"
+                            "User_id INTEGER NOT NULL)")
 
     for table_query in tables_to_create:
         cur.execute(table_query)
