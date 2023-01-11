@@ -5,9 +5,8 @@ CONNECTION_STRING = "BR_DB"
 
 def get_all_recommended_books_for_user(user_name):
     user = get_user(user_name)
-    query = "SELECT * FROM (SELECT * FROM Recommendation WHERE User_id = {}) AS Recommendation INNER JOIN " \
+    query = "SELECT Book.Name FROM (SELECT * FROM Recommendation WHERE User_id = {}) AS Recommendation INNER JOIN " \
             "Book ON Book.Id = Recommendation.Book_id".format(user[0])
-    print(query)
     result = execute_query_with_result(query)
     return result
 
@@ -41,12 +40,16 @@ def create_user(user_name):
 
 def get_book(book_name):
     query = "SELECT * FROM Book WHERE Name = '{}'".format(book_name)
-    return execute_query_with_result(query)[0]
+    result = execute_query_with_result(query)
+    if len(result) != 0:
+        return result[0]
+    return result
 
 
 def create_book(book_name, genre_id):
-    query = "INSERT INTO Book (Name, Genre_id) VALUES('{}', {})".format(book_name, genre_id)
-    execute_query_without_result(query)
+    if len(get_book(book_name)) == 0:
+        query = "INSERT INTO Book (Name, Genre_id) VALUES('{}', {})".format(book_name, genre_id)
+        execute_query_without_result(query)
 
 
 def register_hit(id, user_name):

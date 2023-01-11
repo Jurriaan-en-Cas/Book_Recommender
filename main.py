@@ -1,4 +1,4 @@
-from flask import Flask, request, json
+from flask import Flask, request, jsonify
 
 import database.database_handler
 import mTurk_interface.mTurk
@@ -19,6 +19,14 @@ def recommend():
         return 'OK', 200
     else:
         return 'Data is invalid.', 400
+
+
+@app.route("/get_recommendations", methods=['GET'])
+def get_recommendation():
+    if not request.json:
+        return 'Data is invalid.', 400
+    result = mTurk_interface.mTurk.retrieve_recommendation_hit(request.json['username'])
+    return jsonify(result), 200
 
 
 @app.route("/login", methods=['POST'])
