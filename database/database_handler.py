@@ -26,10 +26,15 @@ def add_recommended_book(user_name, book_name):
 
 def get_user(user_name):
     query = "SELECT * FROM User WHERE Name = '{}'".format(user_name)
-    return execute_query_with_result(query)[0]
+    result = execute_query_with_result(query)
+    if len(result) == 0:
+        return result
+    return result[0]
 
 
 def create_user(user_name):
+    if get_user(user_name) is None:
+        return
     query = "INSERT INTO User (Name) VALUES ('{}')".format(user_name)
     execute_query_without_result(query)
 

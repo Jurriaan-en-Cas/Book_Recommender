@@ -34,7 +34,6 @@ def create_recommendation(user_name, genre, read_book):
    print("https://workersandbox.mturk.com/mturk/preview?groupId=" + new_hit['HIT']['HITGroupId'])
    database.register_hit(new_hit['HIT']['HITId'], user_name)
 
-
 def retrieve_recommendation_hit(user_name):
    hit_id = database.get_hit(user_name)[0]
    worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted'])
