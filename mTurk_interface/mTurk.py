@@ -1,3 +1,5 @@
+from collections import Counter
+
 import boto3
 from os import environ
 import database.database_handler as database
@@ -18,6 +20,10 @@ def print_account_balance():
 
 
 def create_recommendation(user_name, genre, read_book):
+    hit = database.get_hit(user_name)
+    if hit is not None:
+        return
+
     question = open('question.xml', mode='r').read().format(read_book, genre)
     new_hit = mturk.create_hit(
         Title='Recommend two books',
@@ -37,10 +43,10 @@ def create_recommendation(user_name, genre, read_book):
 
 def retrieve_recommendation_hit(user_name):
     hit_id = database.get_hit(user_name)
-    if len(hit_id) == 0:
+    if hit_id is None:
         return database.get_all_recommended_books_for_user(user_name)
     hit_id = hit_id[0]
-    worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted'])
+    worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted', 'Approved'])
     print(worker_results)
     result = []
     for assignment in worker_results['Assignments']:
@@ -53,4 +59,5 @@ def retrieve_recommendation_hit(user_name):
             database.create_book(item, 0)
             database.add_recommended_book(user_name, item)
         database.delete_hit(user_name)
+    result.sort(key=Counter(result).get, reverse=True)
     return result

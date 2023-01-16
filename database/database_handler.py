@@ -11,31 +11,47 @@ def get_all_recommended_books_for_user(user_name):
     return result
 
 
+def get_recommended_book(user_name, book_name):
+    book = get_book(book_name)
+    user = get_user(user_name)
+    query = "SELECT * FROM Recommendation WHERE User_id = '{}' AND Book_id = '{}'".format(user[0], book[0])
+    result = execute_query_with_result(query)
+    if len(result) == 0:
+        return None
+    return result[0]
+
+
 def add_recommended_book(user_name, book_name):
     book = get_book(book_name)
     user = get_user(user_name)
-    print(user[0])
-    query = "INSERT INTO Recommendation (User_id, Book_id) VALUES ({}, {})".format(user[0], book[0])
-    if book is None:
-        create_book(book_name, 0)
-    if user is None:
-        create_user(user_name)
+    recommendation = get_recommended_book(user_name, book_name)
+    if recommendation is None:
+        query = "INSERT INTO Recommendation (User_id, Book_id) VALUES ({}, {})".format(user[0], book[0])
+        if book is None:
+            create_book(book_name, 0)
+        if user is None:
+            create_user(user_name)
+    else:
+        query = "UPDATE Recommendation SET Amount = Amount + 1 WHERE User_id = '{}' AND Book_id = '{}'"\
+            .format(user[0], book[0])
     execute_query_without_result(query)
 
 
 def get_user(user_name):
-    query = "SELECT * FROM User WHERE Name = '{}'".format(user_name)
-    result = execute_query_with_result(query)
+    parameters = (user_name, )
+    query = "SELECT * FROM User WHERE Name = ?"
+    result = execute_query_with_result(query, parameters)
     if len(result) == 0:
-        return result
+        return None
     return result[0]
 
 
 def create_user(user_name):
-    if get_user(user_name) is None:
+    if get_user(user_name) is not None:
         return
-    query = "INSERT INTO User (Name) VALUES ('{}')".format(user_name)
-    execute_query_without_result(query)
+    parameters = (user_name, )
+    query = "INSERT INTO User (Name) VALUES (?)"
+    execute_query_without_result(query, parameters)
 
 
 def get_book(book_name):
@@ -43,13 +59,14 @@ def get_book(book_name):
     result = execute_query_with_result(query)
     if len(result) != 0:
         return result[0]
-    return result
+    return None
 
 
 def create_book(book_name, genre_id):
-    if len(get_book(book_name)) == 0:
-        query = "INSERT INTO Book (Name, Genre_id) VALUES('{}', {})".format(book_name, genre_id)
-        execute_query_without_result(query)
+    parameters = (book_name, genre_id)
+    if get_book(book_name) is not None:
+        query = "INSERT INTO Book (Name, Genre_id) VALUES(?, ?)"
+        execute_query_without_result(query, parameters)
 
 
 def register_hit(id, user_name):
@@ -61,27 +78,37 @@ def register_hit(id, user_name):
 def get_hit(user_name):
     user = get_user(user_name)
     query = "SELECT * FROM Hit WHERE User_id = {}".format(user[0])
-    return execute_query_with_result(query)[0]
+    result = execute_query_with_result(query)
+    if len(result) == 0:
+        return None
+    return result[0]
 
 
 def delete_hit(user_name):
     user = get_user(user_name)
-    query = "DELETE FROM Hit WHERE User_id = {}".format(user[0])
-    execute_query_without_result(query)
+    parameters = (user[0], )
+    query = "DELETE FROM Hit WHERE User_id = ?"
+    execute_query_without_result(query, parameters)
 
 
-def execute_query_with_result(query):
+def execute_query_with_result(query, parameters=None):
     connection = create_connection()
     cursor = connection.cursor()
-    result = cursor.execute(query).fetchall()
+    if parameters:
+        result = cursor.execute(query, parameters).fetchall()
+    else:
+        result = cursor.execute(query).fetchall()
     connection.close()
     return result
 
 
-def execute_query_without_result(query):
+def execute_query_without_result(query, parameters=None):
     connection = create_connection()
     cursor = connection.cursor()
-    cursor.execute(query)
+    if parameters:
+        cursor.execute(query, parameters)
+    else:
+        cursor.execute(query, parameters)
     connection.commit()
     connection.close()
 
@@ -119,7 +146,8 @@ def create_db():
 
     tables_to_create.append("CREATE TABLE IF NOT EXISTS Recommendation ("
                             "User_id INTEGER NOT NULL,"
-                            "Book_id INTEGER NOT NULL)")
+                            "Book_id INTEGER NOT NULL,"
+                            "Amount INTEGER NOT NULL)")
 
     tables_to_create.append("CREATE TABLE IF NOT EXISTS Hit ("
                             "Id INTEGER NOT NULL,"
