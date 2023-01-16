@@ -37,6 +37,20 @@ def login():
     return 'OK', 200
 
 
+@app.route("/get_read_books", methods=['GET'])
+def get_read_books():
+    if not request.json:
+        return 'Data is invalid.', 400
+    database.database_handler.get_read_books(request.json['username'])
+
+
+@app.route("/add_read_book", methods=['POST'])
+def add_read_book():
+    if not request.json:
+        return 'Data is invalid.', 400
+    database.database_handler.add_read_book(request.json['username'], request.json['bookname'], request.json['rating'])
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     database.database_handler.create_db()
