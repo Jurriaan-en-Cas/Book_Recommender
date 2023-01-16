@@ -117,7 +117,7 @@ def get_read_books(user_name):
     query = "SELECT * FROM User_Book WHERE User_id = {}".format(user[0])
     result = execute_query_with_result(query)
     if len(result) == 0:
-        return None
+        return []
     return result
 
 

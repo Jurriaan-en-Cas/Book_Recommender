@@ -41,14 +41,16 @@ def login():
 def get_read_books():
     if not request.json:
         return 'Data is invalid.', 400
-    database.database_handler.get_read_books(request.json['username'])
+    result = database.database_handler.get_read_books(request.json['username'])
+    return jsonify(result), 200
 
 
 @app.route("/add_read_book", methods=['POST'])
 def add_read_book():
     if not request.json:
         return 'Data is invalid.', 400
-    database.database_handler.add_read_book(request.json['username'], request.json['bookname'], request.json['rating'])
+    result = database.database_handler.add_read_book(request.json['username'], request.json['bookname'], request.json['rating'])
+    return jsonify(result), 200
 
 
 # Press the green button in the gutter to run the script.
