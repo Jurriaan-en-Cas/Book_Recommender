@@ -14,7 +14,6 @@ def hello():
 @app.route("/recommend", methods=['POST'])
 def recommend():
     if request.json:
-        print(request.json['username'])
         mTurk_interface.mTurk.create_recommendation(request.json['username'], request.json['genre'], request.json['book'])
         return 'OK', 200
     else:
@@ -49,16 +48,21 @@ def get_read_books():
 def add_read_book():
     if not request.json:
         return 'Data is invalid.', 400
-    result = database.database_handler.add_read_book(request.json['username'], request.json['bookname'], request.json['rating'])
+    result = database.database_handler.add_read_book(request.json['username'], request.json['bookname'],
+                                                     request.json['genre'], request.json['rating'])
     return jsonify(result), 200
 
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+    # database.database_handler.execute_query_without_result("DROP TABLE User_Book")
     database.database_handler.create_db()
+    # database.database_handler.get_book("Harry Potter and the Sorcerer's Stone")
     app.run()
     # mTurk_interface.mTurk.print_account_balance()
     # database.database_handler.create_user("Henk")
     # mTurk_interface.mTurk.create_recommendation("Henk", 'Fantasy', 'Harry Potter and the Order of the Phoenix')
     # mTurk_interface.mTurk.retrieve_recommendation_hit("Henk")
+    # mTurk_interface.mTurk.create_verification_task("Henk", "Fantasy", "Harry Potter and the Sorcerer's Ston", ["Test1", "Test2"])
+    # mTurk_interface.mTurk.retrieve_verification_tasks()
 
