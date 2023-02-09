@@ -38,7 +38,7 @@ def create_recommendation(user_name, genre, read_book):
     )
     print("A new HIT has been created. You can preview it here:")
     print("https://workersandbox.mturk.com/mturk/preview?groupId=" + new_hit['HIT']['HITGroupId'])
-    database.register_hit(new_hit['HIT']['HITId'], user_name)
+    database.register_hit(new_hit['HIT']['HITId'], user_name, genre, read_book, verification=False)
 
 
 def create_verification_task(user_name, genre, read_book, recommendations):
@@ -57,12 +57,11 @@ def create_verification_task(user_name, genre, read_book, recommendations):
     )
     print("A new HIT has been created. You can preview it here:")
     print("https://workersandbox.mturk.com/mturk/preview?groupId=" + new_hit['HIT']['HITGroupId'])
-    database.register_hit(new_hit['HIT']['HITId'], user_name, True)
+    database.register_hit(new_hit['HIT']['HITId'], genre, read_book, user_name, True)
 
 
 def parse_recommendations(recommendations):
     result = "<div><ul>"
-    i = 0
     for recommendation in recommendations:
         result += '<li><input type="checkbox" name={}>{}</li>'.format(recommendation, recommendation)
     result += "</ul></div>"
@@ -76,12 +75,7 @@ def retrieve_recommendation_hit(user_name):
         return database.get_all_recommended_books_for_user(user_name)
     hit_id = hit_id[0]
     worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted', 'Approved'])
-    result = []
-    for assignment in worker_results['Assignments']:
-        xml_doc = xmltodict.parse(assignment['Answer'])
-        answer_fields = xml_doc['QuestionFormAnswers']['Answer']
-        result.append(answer_fields[0]['FreeText'])
-        result.append(answer_fields[1]['FreeText'])
+    result = generate_recommendations_from_worker_results(worker_results)
     if worker_results['NumResults'] == 5:
         for item in result:
             database.create_book(item, 0)
@@ -90,21 +84,35 @@ def retrieve_recommendation_hit(user_name):
     result.sort(key=Counter(result).get, reverse=True)
     return result
 
+
 def generate_verification_tasks():
-    ## Recommendation based on this book
-    ## Workers came up with this result
-    ## Is this a good result
-    ## 2 tasks?
     saved_hits = database.get_all_hits(verification=False)
+    if saved_hits is None:
+        return
     for hit in saved_hits:
         hit_id = hit[0]
         worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted', 'Approved'])
-        # if worker_results['NumResults'] == 5:
-            ## TODO Generate verification task and delete hit from db.
+        if worker_results['NumResults'] == 5:
+            user_name = database.get_user_by_id(hit[1])[1]
+            recommendations = generate_recommendations_from_worker_results(worker_results)
+            create_verification_task(user_name, hit[3], hit[4], recommendations)
+            database.delete_hit(user_name)
+
+
+def generate_recommendations_from_worker_results(worker_results):
+    recommendations = []
+    for assignment in worker_results['Assignments']:
+        xml_doc = xmltodict.parse(assignment['Answer'])
+        answer_fields = xml_doc['QuestionFormAnswers']['Answer']
+        recommendations.append(answer_fields[0]['FreeText'])
+        recommendations.append(answer_fields[1]['FreeText'])
+    return recommendations
 
 
 def retrieve_verification_tasks():
     saved_hits = database.get_all_hits(verification=True)
+    if saved_hits is None:
+        return
     for hit in saved_hits:
         hit_id = hit[0]
         user_id = hit[1]

@@ -89,9 +89,10 @@ def create_book(book_name, genre_id):
     return book
 
 
-def register_hit(id, user_name, verification=False):
+def register_hit(hit_id, user_name, requested_genre, requested_book, verification=False):
     user = get_user(user_name)
-    query = "INSERT INTO Hit (Id, User_id, Verification) VALUES ('{}', {}, {})".format(id, user[0], verification)
+    query = "INSERT INTO Hit (Id, User_id, Verification, Requested_genre, Requested_book) " \
+            "VALUES ('{}', {}, {}, {}, {})".format(hit_id, user[0], requested_genre, requested_book, verification)
     execute_query_without_result(query)
 
 
@@ -224,7 +225,9 @@ def create_db():
     tables_to_create.append("CREATE TABLE IF NOT EXISTS Hit ("
                             "Id INTEGER NOT NULL,"
                             "User_id INTEGER NOT NULL,"
-                            "Verification BOOLEAN NOT NULL)")
+                            "Verification BOOLEAN NOT NULL,"
+                            "Requested_genre VARCHAR(64) NOT NULL,"
+                            "Requested_book VARCHAR(64) NOT NULL)")
 
     for table_query in tables_to_create:
         cur.execute(table_query)

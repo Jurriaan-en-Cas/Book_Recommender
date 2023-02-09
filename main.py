@@ -1,7 +1,11 @@
+import atexit
+import time
+
 from flask import Flask, request, jsonify
 
 import database.database_handler
 import mTurk_interface.mTurk
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
@@ -53,12 +57,22 @@ def add_read_book():
     return jsonify(result), 200
 
 
+def retrieve_open_hits():
+    print("Sending open hit requests..")
+    mTurk_interface.mTurk.generate_verification_tasks()
+    mTurk_interface.mTurk.retrieve_verification_tasks()
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # database.database_handler.execute_query_without_result("DROP TABLE User_Book")
     database.database_handler.create_db()
-    # database.database_handler.get_book("Harry Potter and the Sorcerer's Stone")
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=retrieve_open_hits, trigger="interval", seconds=600)
+    scheduler.start()
+    atexit.register(lambda: scheduler.shutdown())
+
     app.run()
+
     # mTurk_interface.mTurk.print_account_balance()
     # database.database_handler.create_user("Henk")
     # mTurk_interface.mTurk.create_recommendation("Henk", 'Fantasy', 'Harry Potter and the Order of the Phoenix')
