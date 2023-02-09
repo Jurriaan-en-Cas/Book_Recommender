@@ -107,8 +107,9 @@ def get_hit(user_name):
 
 
 def get_all_hits(verification=False, verification_required=False):
-    query = "SELECT * FROM Hit WHERE Verification={} AND Verification_required = {}".format(verification,
-                                                                                            verification_required)
+    query = "SELECT * FROM Hit WHERE VERIFICATION=".format(verification)
+    if not verification:
+        query += " AND Verification_required = {}".format(verification_required)
     result = execute_query_with_result(query)
     if len(result) == 0:
         return None

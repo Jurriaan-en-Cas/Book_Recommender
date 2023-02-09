@@ -10,6 +10,7 @@ app = Flask(__name__)
 
 REQUIRE_VERIFICATION = False
 
+
 @app.route("/")
 def hello():
     return "Welcome to the Book Recommender Python API"
