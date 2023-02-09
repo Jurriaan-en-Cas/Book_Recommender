@@ -1,5 +1,4 @@
 import atexit
-import time
 
 from flask import Flask, request, jsonify
 
@@ -9,6 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
+REQUIRE_VERIFICATION = False
 
 @app.route("/")
 def hello():
@@ -18,7 +18,8 @@ def hello():
 @app.route("/recommend", methods=['POST'])
 def recommend():
     if request.json:
-        mTurk_interface.mTurk.create_recommendation(request.json['username'], request.json['genre'], request.json['book'])
+        mTurk_interface.mTurk.create_recommendation(request.json['username'], request.json['genre'], request.json['book'],
+                                                    REQUIRE_VERIFICATION)
         return 'OK', 200
     else:
         return 'Data is invalid.', 400
@@ -70,7 +71,6 @@ if __name__ == '__main__':
     scheduler.add_job(func=retrieve_open_hits, trigger="interval", seconds=600)
     scheduler.start()
     atexit.register(lambda: scheduler.shutdown())
-
     app.run()
 
     # mTurk_interface.mTurk.print_account_balance()

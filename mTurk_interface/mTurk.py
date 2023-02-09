@@ -19,7 +19,7 @@ def print_account_balance():
     print("I have $" + mturk.get_account_balance()['AvailableBalance'] + " in my Sandbox account")
 
 
-def create_recommendation(user_name, genre, read_book):
+def create_recommendation(user_name, genre, read_book, verification_required=False):
     hit = database.get_hit(user_name)
     if hit is not None:
         return
@@ -38,7 +38,8 @@ def create_recommendation(user_name, genre, read_book):
     )
     print("A new HIT has been created. You can preview it here:")
     print("https://workersandbox.mturk.com/mturk/preview?groupId=" + new_hit['HIT']['HITGroupId'])
-    database.register_hit(new_hit['HIT']['HITId'], user_name, genre, read_book, verification=False)
+    database.register_hit(new_hit['HIT']['HITId'], user_name, genre, read_book, verification=False,
+                          verification_required=verification_required)
 
 
 def create_verification_task(user_name, genre, read_book, recommendations):
@@ -86,7 +87,7 @@ def retrieve_recommendation_hit(user_name):
 
 
 def generate_verification_tasks():
-    saved_hits = database.get_all_hits(verification=False)
+    saved_hits = database.get_all_hits(verification=False, verification_required=True)
     if saved_hits is None:
         return
     for hit in saved_hits:

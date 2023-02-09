@@ -89,10 +89,11 @@ def create_book(book_name, genre_id):
     return book
 
 
-def register_hit(hit_id, user_name, requested_genre, requested_book, verification=False):
+def register_hit(hit_id, user_name, requested_genre, requested_book, verification=False, verification_required=False):
     user = get_user(user_name)
-    query = "INSERT INTO Hit (Id, User_id, Verification, Requested_genre, Requested_book) " \
-            "VALUES ('{}', {}, {}, {}, {})".format(hit_id, user[0], requested_genre, requested_book, verification)
+    query = "INSERT INTO Hit (Id, User_id, Verification, Requested_genre, Requested_book, Verification_required) " \
+            "VALUES ('{}', {}, {}, {}, {}, {}})".format(hit_id, user[0], requested_genre, requested_book, verification,
+                                                        verification_required)
     execute_query_without_result(query)
 
 
@@ -105,8 +106,9 @@ def get_hit(user_name):
     return result[0]
 
 
-def get_all_hits(verification=False):
-    query = "SELECT * FROM Hit WHERE Verification={}".format(verification)
+def get_all_hits(verification=False, verification_required=False):
+    query = "SELECT * FROM Hit WHERE Verification={} AND Verification_required = {}".format(verification,
+                                                                                            verification_required)
     result = execute_query_with_result(query)
     if len(result) == 0:
         return None
@@ -227,7 +229,8 @@ def create_db():
                             "User_id INTEGER NOT NULL,"
                             "Verification BOOLEAN NOT NULL,"
                             "Requested_genre VARCHAR(64) NOT NULL,"
-                            "Requested_book VARCHAR(64) NOT NULL)")
+                            "Requested_book VARCHAR(64) NOT NULL,"
+                            "Verification_required BOOLEAN NOT NULL)")
 
     for table_query in tables_to_create:
         cur.execute(table_query)
