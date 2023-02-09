@@ -91,9 +91,11 @@ def create_book(book_name, genre_id):
 
 def register_hit(hit_id, user_name, requested_genre, requested_book, verification=False, verification_required=False):
     user = get_user(user_name)
+    requested_book = requested_book.replace("'", "''").lower()
     query = "INSERT INTO Hit (Id, User_id, Verification, Requested_genre, Requested_book, Verification_required) " \
-            "VALUES ('{}', {}, {}, {}, {}, {}})".format(hit_id, user[0], requested_genre, requested_book, verification,
-                                                        verification_required)
+            "VALUES ('{}', {}, {}, '{}', '{}', {})".format(hit_id, user[0], verification, requested_genre,
+                                                           requested_book, verification_required)
+    print(query)
     execute_query_without_result(query)
 
 

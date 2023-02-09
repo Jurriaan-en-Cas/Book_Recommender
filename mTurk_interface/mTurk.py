@@ -77,12 +77,9 @@ def retrieve_recommendation_hit(user_name):
     hit_id = hit_id[0]
     worker_results = mturk.list_assignments_for_hit(HITId=hit_id, AssignmentStatuses=['Submitted', 'Approved'])
     result = generate_recommendations_from_worker_results(worker_results)
-    if worker_results['NumResults'] == 5:
-        for item in result:
-            database.create_book(item, 0)
-            database.add_recommended_book(user_name, item)
-        database.delete_hit(user_name)
     result.sort(key=Counter(result).get, reverse=True)
+    if worker_results['NumResults'] != 5:
+        result.append("Please note the request is still active. This is not the final result.")
     return result
 
 
