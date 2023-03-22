@@ -23,7 +23,7 @@ jobs:
       run: |
         curl -sSL https://install.python-poetry.org | python - -y
     - name: Update PATH
-      run: export PATH=$HOME/.local/bin:$PATH
+      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
     - name: Configure poetry
       run: poetry config virtualenvs.in-project true
     - name: Set up cache
@@ -45,4 +45,4 @@ jobs:
       run: poetry install --with dev
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py')
+        poetry run pylint $(git ls-files '*.py')
