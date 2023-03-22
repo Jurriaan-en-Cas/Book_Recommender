@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "book-recommender"
+version = "0.1.0"
+description = ""
+authors = ["Jurriaan Den Toonder <1493561+Fastjur@users.noreply.github.com>"]
+readme = "README.md"
+packages = []
+
+[tool.poetry.dependencies]
+python = "^3.8"
+boto3 = "^1.26.96"
+Flask = "^2.2.3"
+xmltodict = "^0.13.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.17.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
